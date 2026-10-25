@@ -65,7 +65,14 @@ func (c *Config) ServerPort() string {
 	return ":" + c.Server.Port
 }
 
+// ConnectDatabaseString prefers DATABASE_URL when set, so it names the same
+// target RedactedDatabaseTarget logs. Otherwise it builds a DSN from the
+// discrete DB_* values.
 func (c *Config) ConnectDatabaseString() string {
+	if c.Database.URL != "" {
+		return c.Database.URL
+	}
+
 	sslMode := c.Database.SSLMode
 	if sslMode == "" {
 		sslMode = "disable"

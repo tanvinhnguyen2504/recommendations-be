@@ -45,7 +45,9 @@ func Load() (*Config, error) {
 
 	config.Database.URL = os.Getenv("DATABASE_URL")
 	config.Database.Host = envOr("DB_HOST", "localhost")
-	config.Database.Port = envIntOr("DB_PORT", 5432)
+	if config.Database.Port, err = envIntOr("DB_PORT", 5432); err != nil {
+		return nil, err
+	}
 	config.Database.User = envOr("DB_USER", "postgres")
 	config.Database.Password = os.Getenv("DB_PASSWORD")
 	config.Database.Name = os.Getenv("DB_NAME")
@@ -58,7 +60,9 @@ func Load() (*Config, error) {
 	config.FrontendURL = strings.TrimSuffix(envOr("FRONTEND_URL", "http://localhost:5173"), "/")
 
 	config.Auth.EncryptionKey = os.Getenv("ENCRYPTION_KEY")
-	config.Auth.EncryptionKeyVersion = envIntOr("ENCRYPTION_KEY_VERSION", 1)
+	if config.Auth.EncryptionKeyVersion, err = envIntOr("ENCRYPTION_KEY_VERSION", 1); err != nil {
+		return nil, err
+	}
 
 	if config.Auth.SessionTTL, err = durationOr("SESSION_TTL", 12*time.Hour); err != nil {
 		return nil, err
@@ -107,10 +111,16 @@ func envOr(key, fallback string) string {
 	return fallback
 }
 
-func envIntOr(key string, fallback int) int {
-	v, err := strconv.Atoi(os.Getenv(key))
-	if err != nil {
-		return fallback
+// envIntOr reports a malformed value rather than falling back to the default:
+// a typo in DB_PORT should fail, not quietly connect somewhere else.
+func envIntOr(key string, fallback int) (int, error) {
+	raw := os.Getenv(key)
+	if raw == "" {
+		return fallback, nil
 	}
-	return v
+	v, err := strconv.Atoi(raw)
+	if err != nil {
+		return 0, fmt.Errorf("config: %s is not an integer: %w", key, err)
+	}
+	return v, nil
 }
