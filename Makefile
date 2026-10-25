@@ -54,3 +54,27 @@ migrate-down:
 .PHONY: migrate-status
 migrate-status:
 	set -a; . $(FILE_ENV); set +a; $(GOOSE) -dir $(MIGRATE_DIR) postgres "$(GOOSE_DSN)" status
+
+# +-------+
+# | seeds |
+# +-------+
+PSQL      := $(shell which psql)
+SEED_DIR  := ./internal/platform/db/seeds
+PSQL_CONN := -h $$DB_HOST -p $$DB_PORT -U $$DB_USER -d $$DB_NAME
+# ROWS is overridable: make seed ROWS=1000
+ROWS      := 1000000
+
+.PHONY: seed
+seed:
+	set -a; . $(FILE_ENV); set +a; PGPASSWORD=$$DB_PASSWORD $(PSQL) $(PSQL_CONN) -v rows=$(ROWS) -f $(SEED_DIR)/001_gm_places_seed.sql
+
+.PHONY: seed-indexes
+seed-indexes:
+	set -a; . $(FILE_ENV); set +a; PGPASSWORD=$$DB_PASSWORD $(PSQL) $(PSQL_CONN) -f $(SEED_DIR)/002_gm_places_indexes.sql
+
+# Destructive: truncates gm_places before reseeding.
+.PHONY: seed-reset
+seed-reset:
+	set -a; . $(FILE_ENV); set +a; PGPASSWORD=$$DB_PASSWORD $(PSQL) $(PSQL_CONN) -f $(SEED_DIR)/000_gm_places_reset.sql
+	$(MAKE) seed ROWS=$(ROWS)
+	$(MAKE) seed-indexes
