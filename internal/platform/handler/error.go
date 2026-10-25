@@ -82,7 +82,6 @@ func (e *APIError) Status() int {
 	return http.StatusInternalServerError
 }
 
-// ErrorResponse is the wire format for every failed request: {"error":{...}}.
 type ErrorResponse struct {
 	Error ErrorBody `json:"error"`
 }
@@ -92,8 +91,6 @@ type ErrorBody struct {
 	Message string    `json:"message"`
 }
 
-// Error builds an APIError with the code's default message, keeping cause for
-// the log.
 func Error(code ErrorCode, cause error) *APIError {
 	return &APIError{
 		Code:    code,

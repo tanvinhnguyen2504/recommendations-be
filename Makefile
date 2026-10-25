@@ -18,7 +18,7 @@ api:
 .PHONY: swagger
 swagger:
 	$(SWAG) fmt
-	$(SWAG) init --parseDependency --dir ./cmd/server,internal --output ./docs/swagger
+	$(SWAG) init --parseDependency --useStructName --dir ./cmd/server,internal --output ./docs/swagger
 
 .PHONY: vet
 vet:

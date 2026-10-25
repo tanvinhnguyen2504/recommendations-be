@@ -9,12 +9,22 @@ import (
 	"syscall"
 	"time"
 
+	_ "github.com/nguyentanvinh/recommendations-be/backend/docs/swagger"
 	"github.com/nguyentanvinh/recommendations-be/backend/internal/platform/config"
 	"github.com/nguyentanvinh/recommendations-be/backend/internal/platform/db"
 	"github.com/nguyentanvinh/recommendations-be/backend/internal/platform/middleware"
 	"github.com/nguyentanvinh/recommendations-be/backend/internal/platform/router"
 )
 
+// @title			Recommendations API
+// @version		1.0
+// @description	REST API over the gm_places dataset: food and drink venues
+// @description	collected by a scraper. Lists are keyset paged via metadata.next_cursor.
+// @host			localhost:9998
+// @BasePath		/api/v1
+// @schemes		http https
+// @accept			json
+// @produce		json
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()

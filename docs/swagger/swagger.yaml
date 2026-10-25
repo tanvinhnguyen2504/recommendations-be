@@ -1,0 +1,337 @@
+basePath: /api/v1
+consumes:
+- application/json
+definitions:
+  ErrorBody:
+    properties:
+      code:
+        $ref: '#/definitions/ErrorCode'
+      message:
+        type: string
+    type: object
+  ErrorCode:
+    enum:
+    - VALIDATION_ERROR
+    - UNAUTHENTICATED
+    - FORBIDDEN
+    - NOT_FOUND
+    - RATE_LIMITED
+    - UPSTREAM_ERROR
+    - INTERNAL
+    type: string
+    x-enum-varnames:
+    - ECValidationError
+    - ECUnauthenticated
+    - ECForbidden
+    - ECNotFound
+    - ECRateLimited
+    - ECUpstreamError
+    - ECInternal
+  ErrorResponse:
+    properties:
+      error:
+        $ref: '#/definitions/ErrorBody'
+    type: object
+  PageMetadata:
+    properties:
+      limit:
+        type: integer
+      next_cursor:
+        type: string
+    type: object
+  Place:
+    properties:
+      address:
+        items:
+          type: integer
+        type: array
+      address_line:
+        type: string
+      category:
+        type: string
+      district:
+        type: string
+      first_seen_at:
+        type: string
+      id:
+        type: integer
+      images:
+        items:
+          type: integer
+        type: array
+      is_fnb:
+        type: boolean
+      last_seen_at:
+        type: string
+      last_task_id:
+        type: integer
+      latitude:
+        type: number
+      longitude:
+        type: number
+      name:
+        type: string
+      open_hours:
+        items:
+          type: integer
+        type: array
+      phone_number:
+        type: string
+      place_key:
+        type: string
+      price_level:
+        type: string
+      province:
+        type: string
+      ratings:
+        type: integer
+      stars:
+        type: number
+      types:
+        items:
+          type: string
+        type: array
+      website:
+        type: string
+    type: object
+  PlaceInput:
+    properties:
+      address:
+        items:
+          type: integer
+        type: array
+      address_line:
+        type: string
+      category:
+        type: string
+      district:
+        type: string
+      images:
+        items:
+          type: integer
+        type: array
+      is_fnb:
+        description: IsFnB defaults to true when omitted, matching the column default.
+        type: boolean
+      last_task_id:
+        type: integer
+      latitude:
+        type: number
+      longitude:
+        type: number
+      name:
+        type: string
+      open_hours:
+        items:
+          type: integer
+        type: array
+      phone_number:
+        type: string
+      place_key:
+        type: string
+      price_level:
+        type: string
+      province:
+        type: string
+      ratings:
+        type: integer
+      stars:
+        type: number
+      types:
+        items:
+          type: string
+        type: array
+      website:
+        type: string
+    type: object
+  SuccessResponse:
+    properties:
+      count:
+        type: integer
+      data: {}
+      metadata: {}
+      session_id:
+        type: string
+    type: object
+host: localhost:9998
+info:
+  contact: {}
+  description: |-
+    REST API over the gm_places dataset: food and drink venues
+    collected by a scraper. Lists are keyset paged via metadata.next_cursor.
+  title: Recommendations API
+  version: "1.0"
+paths:
+  /places:
+    get:
+      description: Keyset paged. Omit cursor for the first page, then send back metadata.next_cursor
+        until it is null.
+      parameters:
+      - description: Case-insensitive match on name
+        in: query
+        name: q
+        type: string
+      - description: Exact province
+        in: query
+        name: province
+        type: string
+      - description: Exact district
+        in: query
+        name: district
+        type: string
+      - description: food or drink
+        in: query
+        name: category
+        type: string
+      - description: Page size (1-200, default 50)
+        in: query
+        name: limit
+        type: integer
+      - description: metadata.next_cursor from the previous page
+        in: query
+        name: cursor
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/SuccessResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/Place'
+                  type: array
+                metadata:
+                  $ref: '#/definitions/PageMetadata'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: List places
+      tags:
+      - places
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Place
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/PlaceInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/Place'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Create a place
+      tags:
+      - places
+  /places/{id}:
+    delete:
+      parameters:
+      - description: Place id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Delete a place
+      tags:
+      - places
+    get:
+      parameters:
+      - description: Place id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/Place'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Get one place
+      tags:
+      - places
+    put:
+      consumes:
+      - application/json
+      description: 'PUT is a full replacement: any field left out of the body is written
+        as NULL.'
+      parameters:
+      - description: Place id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Place
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/PlaceInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/Place'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Replace a place
+      tags:
+      - places
+produces:
+- application/json
+schemes:
+- http
+- https
+swagger: "2.0"

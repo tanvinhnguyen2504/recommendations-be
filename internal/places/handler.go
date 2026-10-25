@@ -39,7 +39,7 @@ type PageMetadata struct {
 //	@Param			category	query		string	false	"food or drink"
 //	@Param			limit		query		int		false	"Page size (1-200, default 50)"
 //	@Param			cursor		query		string	false	"metadata.next_cursor from the previous page"
-//	@Success		200			{object}	config.SuccessResponse
+//	@Success		200			{object}	config.SuccessResponse{data=[]Place,metadata=PageMetadata}
 //	@Failure		400			{object}	handler.ErrorResponse
 //	@Router			/places [get]
 func (h *Handler) ListPlaces(w http.ResponseWriter, r *http.Request) {
@@ -93,7 +93,7 @@ func (h *Handler) ListPlaces(w http.ResponseWriter, r *http.Request) {
 //	@Tags		places
 //	@Produce	json
 //	@Param		id	path		int	true	"Place id"
-//	@Success	200	{object}	config.SuccessResponse
+//	@Success	200	{object}	config.SuccessResponse{data=Place}
 //	@Failure	404	{object}	handler.ErrorResponse
 //	@Router		/places/{id} [get]
 func (h *Handler) GetPlaceByID(w http.ResponseWriter, r *http.Request) {
@@ -119,7 +119,7 @@ func (h *Handler) GetPlaceByID(w http.ResponseWriter, r *http.Request) {
 //	@Accept		json
 //	@Produce	json
 //	@Param		body	body		PlaceInput	true	"Place"
-//	@Success	201		{object}	config.SuccessResponse
+//	@Success	201		{object}	config.SuccessResponse{data=Place}
 //	@Failure	400		{object}	handler.ErrorResponse
 //	@Router		/places [post]
 func (h *Handler) CreatePlace(w http.ResponseWriter, r *http.Request) {
@@ -148,7 +148,7 @@ func (h *Handler) CreatePlace(w http.ResponseWriter, r *http.Request) {
 //	@Produce		json
 //	@Param			id		path		int			true	"Place id"
 //	@Param			body	body		PlaceInput	true	"Place"
-//	@Success		200		{object}	config.SuccessResponse
+//	@Success		200		{object}	config.SuccessResponse{data=Place}
 //	@Failure		400		{object}	handler.ErrorResponse
 //	@Failure		404		{object}	handler.ErrorResponse
 //	@Router			/places/{id} [put]
