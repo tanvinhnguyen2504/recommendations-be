@@ -12,9 +12,7 @@ run:
 api:
 	set -a; . $(FILE_ENV); set +a; $(GO) run ./cmd/server
 
-# +-----------+
-# | sub tasks |
-# +-----------+
+
 .PHONY: swagger
 swagger:
 	$(SWAG) fmt
@@ -36,45 +34,31 @@ test: vet mockgen
 coverage:
 	$(GO) test ./... -coverprofile=coverage.out && $(GO) tool cover -html=coverage.out
 
-# +------------+
-# | migrations |
-# +------------+
-GOOSE       := $(shell which goose)
-MIGRATE_DIR := ./db/migrations
-GOOSE_DSN   := postgres://$$DB_USER:$$DB_PASSWORD@$$DB_HOST:$$DB_PORT/$$DB_NAME?sslmode=$$DB_SSLMODE
 
-.PHONY: migrate
-migrate:
-	set -a; . $(FILE_ENV); set +a; $(GOOSE) -dir $(MIGRATE_DIR) postgres "$(GOOSE_DSN)" up
+# +-------------------+
+# | image / registry  |
+# +-------------------+
+# --platform linux/amd64 is required, not optional: this machine is arm64 and
+# the GKE nodes are e2-medium (amd64). A natively-built image would fail on the
+# node with "exec format error".
+DOCKER    := $(shell which docker)
+AR_HOST   := asia-southeast1-docker.pkg.dev
+AR_IMAGE  := $(AR_HOST)/vincent-mini-apps-project/recommendations-repository/recommendations-service
+TAG       ?= $(shell git rev-parse --short HEAD)
 
-.PHONY: migrate-down
-migrate-down:
-	set -a; . $(FILE_ENV); set +a; $(GOOSE) -dir $(MIGRATE_DIR) postgres "$(GOOSE_DSN)" down
+.PHONY: ar-login
+ar-login:
+	gcloud auth configure-docker $(AR_HOST)
 
-.PHONY: migrate-status
-migrate-status:
-	set -a; . $(FILE_ENV); set +a; $(GOOSE) -dir $(MIGRATE_DIR) postgres "$(GOOSE_DSN)" status
+# Tagged by commit SHA, never :latest — a mutable tag makes a rollout
+# non-deterministic and `kubectl rollout undo` meaningless.
+.PHONY: image-push
+image-push:
+	$(DOCKER) buildx build --platform linux/amd64 --target runtime \
+	  -t $(AR_IMAGE):$(TAG) --push .
 
-# +-------+
-# | seeds |
-# +-------+
-PSQL      := $(shell which psql)
-SEED_DIR  := ./internal/platform/db/seeds
-PSQL_CONN := -h $$DB_HOST -p $$DB_PORT -U $$DB_USER -d $$DB_NAME
-# ROWS is overridable: make seed ROWS=1000
-ROWS      := 1000000
-
-.PHONY: seed
-seed:
-	set -a; . $(FILE_ENV); set +a; PGPASSWORD=$$DB_PASSWORD $(PSQL) $(PSQL_CONN) -v rows=$(ROWS) -f $(SEED_DIR)/001_gm_places_seed.sql
-
-.PHONY: seed-indexes
-seed-indexes:
-	set -a; . $(FILE_ENV); set +a; PGPASSWORD=$$DB_PASSWORD $(PSQL) $(PSQL_CONN) -f $(SEED_DIR)/002_gm_places_indexes.sql
-
-# Destructive: truncates gm_places before reseeding.
-.PHONY: seed-reset
-seed-reset:
-	set -a; . $(FILE_ENV); set +a; PGPASSWORD=$$DB_PASSWORD $(PSQL) $(PSQL_CONN) -f $(SEED_DIR)/000_gm_places_reset.sql
-	$(MAKE) seed ROWS=$(ROWS)
-	$(MAKE) seed-indexes
+# Same build, kept local, to inspect before pushing.
+.PHONY: image
+image:
+	$(DOCKER) buildx build --platform linux/amd64 --target runtime \
+	  -t $(AR_IMAGE):$(TAG) --load .
