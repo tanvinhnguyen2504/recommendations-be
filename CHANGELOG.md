@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.2](https://github.com/tanvinhnguyen2504/recommendations-be/releases/tag/0.1.2) - 2026-11-03
+
+- feat(swagger): add more field data `image` when check health
+
 ## [0.1.1](https://github.com/tanvinhnguyen2504/recommendations-be/releases/tag/0.1.1) - 2026-11-03
 - [#PR1](https://github.com/tanvinhnguyen2504/recommendations-be/pull/1)
   - feat(ci): add CI and Artifact Registry release workflows
