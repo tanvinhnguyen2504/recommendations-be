@@ -61,7 +61,7 @@ func main() {
 	}
 
 	go func() {
-		log.Printf("listening on %s", config.ServerPort())
+		log.Printf("listening on %s (env=%s image=%s)", config.ServerPort(), config.Env, config.Image)
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatalf("server: %v", err)
 		}

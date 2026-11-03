@@ -17,6 +17,8 @@ var configFS embed.FS
 
 const defaultEnv = "development"
 
+var buildImage = "dev"
+
 // Load reads the embedded config for APP_ENV and overlays environment variables.
 func Load() (*Config, error) {
 	env := envOr("APP_ENV", defaultEnv)
@@ -58,6 +60,8 @@ func Load() (*Config, error) {
 
 	config.BaseURL = strings.TrimSuffix(envOr("BASE_URL", "http://localhost:9998"), "/")
 	config.FrontendURL = strings.TrimSuffix(envOr("FRONTEND_URL", "http://localhost:5173"), "/")
+
+	config.Image = envOr("ENV_IMAGE", buildImage)
 
 	config.Auth.EncryptionKey = os.Getenv("ENCRYPTION_KEY")
 	if config.Auth.EncryptionKeyVersion, err = envIntOr("ENCRYPTION_KEY_VERSION", 1); err != nil {

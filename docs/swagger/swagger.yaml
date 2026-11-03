@@ -32,6 +32,13 @@ definitions:
       error:
         $ref: '#/definitions/ErrorBody'
     type: object
+  HealthResponse:
+    properties:
+      env:
+        type: string
+      image:
+        type: string
+    type: object
   PageMetadata:
     properties:
       limit:
@@ -162,6 +169,34 @@ info:
   title: Recommendations API
   version: "1.0"
 paths:
+  /:
+    get:
+      description: Liveness probe. Always 200 while the process is serving; echoes
+        the running env and image tag.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/HealthResponse'
+      summary: Health check
+      tags:
+      - health
+  /health:
+    get:
+      description: Liveness probe. Always 200 while the process is serving; echoes
+        the running env and image tag.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/HealthResponse'
+      summary: Health check
+      tags:
+      - health
   /places:
     get:
       description: Keyset paged. Omit cursor for the first page, then send back metadata.next_cursor

@@ -21,6 +21,46 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/": {
+            "get": {
+                "description": "Liveness probe. Always 200 while the process is serving; echoes the running env and image tag.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "health"
+                ],
+                "summary": "Health check",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/HealthResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/health": {
+            "get": {
+                "description": "Liveness probe. Always 200 while the process is serving; echoes the running env and image tag.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "health"
+                ],
+                "summary": "Health check",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/HealthResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/places": {
             "get": {
                 "description": "Keyset paged. Omit cursor for the first page, then send back metadata.next_cursor until it is null.",
@@ -329,6 +369,17 @@ const docTemplate = `{
             "properties": {
                 "error": {
                     "$ref": "#/definitions/ErrorBody"
+                }
+            }
+        },
+        "HealthResponse": {
+            "type": "object",
+            "properties": {
+                "env": {
+                    "type": "string"
+                },
+                "image": {
+                    "type": "string"
                 }
             }
         },
