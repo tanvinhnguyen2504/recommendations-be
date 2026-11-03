@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.1.0](https://github.com/tanvinhnguyen2504/recommendations-be/releases/tag/0.1.0) - 2026-11-02
+## [0.1.1](https://github.com/tanvinhnguyen2504/recommendations-be/releases/tag/0.1.1) - 2026-11-03
 - [#PR1](https://github.com/tanvinhnguyen2504/recommendations-be/pull/1)
   - feat(ci): add CI and Artifact Registry release workflows
 
